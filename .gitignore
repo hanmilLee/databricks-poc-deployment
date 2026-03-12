@@ -1,0 +1,30 @@
+# Terraform working directory
+.terraform/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Terraform plan/output artifacts
+*.tfplan
+plan.out
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Terraform override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local CLI settings
+.terraformrc
+terraform.rc
+
+# macOS
+.DS_Store
+
+# Keep provider lock file tracked
+!.terraform.lock.hcl
