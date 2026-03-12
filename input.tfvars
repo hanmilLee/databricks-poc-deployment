@@ -1,10 +1,10 @@
 env_name                       = "databricks"
-user_name                      = "[firstname.lastname]"
-region                         = "ap-northeast-2"
-prefix                         = "mycompany001-poc"
-deployment_name_prefix_enabled = false
-deployment_name                = null
-databricks_account_id          = "[databricks account id]"
-client_id                      = "[client id of a service principal(having admin permission)]"
-client_secret                  = "[client secret value of the service principal]"
-cidr_block                     = "[vpc cidr block]"
+user_name                      = "[firstname.lastname]"                                        # example. "hanmil.lee"
+region                         = "ap-northeast-2"                                              # 사용될 region
+prefix                         = "mycompany001-poc"                                            # 사용될 databricks workspace name
+deployment_name_prefix_enabled = false                                                         # Salesforce상에서 prefix 가 enable 된 경우 true, 아니면 false
+deployment_name                = null                                                          # deployment_name_prefix_enabled = true인 경우, workspace url 앞부분에 들어갈 prefix 입력
+databricks_account_id          = "[databricks account id]"                                     # "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+client_id                      = "[client id of a service principal(having admin permission)]" # "56xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+client_secret                  = "[client secret value of the service principal]"              # "dosxxxxxxxxxxxxxxxxxxxxxxxxx"
+cidr_block                     = "[vpc cidr block]"                                            # example. "10.10.0.0/16"
