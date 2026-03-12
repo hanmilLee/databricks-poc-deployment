@@ -1,7 +1,7 @@
 resource "aws_s3_bucket" "root_storage_bucket" {
   bucket        = "${local.prefix}-rootbucket"
   force_destroy = true
-  tags = merge(var.tags, {
+  tags = merge(local.tags, {
     Name = "${local.prefix}-rootbucket"
   })
 }
@@ -15,8 +15,8 @@ resource "aws_s3_bucket_ownership_controls" "root_storage_bucket" {
 
 resource "aws_s3_bucket_acl" "root_storage_bucket" {
   depends_on = [aws_s3_bucket_ownership_controls.root_storage_bucket]
-  bucket = aws_s3_bucket.root_storage_bucket.id
-  acl    = "private"
+  bucket     = aws_s3_bucket.root_storage_bucket.id
+  acl        = "private"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "root_storage_bucket" {
