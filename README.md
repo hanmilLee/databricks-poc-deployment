@@ -14,6 +14,8 @@ Databricks on AWS 환경을 Terraform으로 배포하기 위한 PoC 예제입니
 ## 사전 준비
 
 - AWS 계정 및 Terraform 실행 권한
+- AWS CLI 설치 및 로그인 완료 상태 (`aws configure` 또는 `aws sso login`)
+- AWS 인증 확인 가능 상태 (`aws sts get-caller-identity` 성공)
 - Databricks Account Admin 권한이 있는 Service Principal
 - 아래 값 준비
   - `databricks_account_id`
@@ -65,6 +67,7 @@ cd databricks-poc-deployment
 3. `input.tfvars` 값 수정
 
 아래 항목을 실제 값으로 바꿔주세요.
+이 프로젝트는 AWS Provider 기본 자격 증명 체인(예: AWS CLI 로그인 세션, `~/.aws/credentials`)을 사용하므로 `aws_access_key_id`/`aws_secret_access_key`는 `input.tfvars`에 넣지 않습니다.
 
 ```hcl
 env_name             = "databricks"
@@ -76,7 +79,13 @@ client_secret        = "your-service-principal-client-secret"
 cidr_block           = "10.4.0.0/16"
 ```
 
-4. Terraform 명령 실행
+4. AWS 인증 상태 확인
+
+```bash
+aws sts get-caller-identity
+```
+
+5. Terraform 명령 실행
 
 ```bash
 terraform init
@@ -84,14 +93,14 @@ terraform plan -var-file="input.tfvars"
 terraform apply -var-file="input.tfvars"
 ```
 
-5. 배포 결과 확인
+6. 배포 결과 확인
 
 ```bash
 terraform output databricks_host
 terraform output databricks_token
 ```
 
-6. 리소스 삭제
+7. 리소스 삭제
 
 ```bash
 terraform destroy -var-file="input.tfvars"
