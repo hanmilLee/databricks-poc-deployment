@@ -24,6 +24,7 @@ Databricks on AWS 환경을 Terraform으로 배포하기 위한 PoC 예제입니
   - `user_name`
   - `region`
   - `prefix`
+  - `deployment_name_prefix_enabled`
   - `deployment_name` (선택)
   - `cidr_block`
 
@@ -76,12 +77,15 @@ env_name             = "databricks"
 user_name            = "firstname.lastname"
 region               = "ap-northeast-2"
 prefix               = "mycompany001-poc"
-deployment_name      = "poc-workspace" # optional
+deployment_name_prefix_enabled = false
+deployment_name      = null # prefix enabled 계정일 때만 값 입력
 databricks_account_id = "your-databricks-account-id"
 client_id            = "your-service-principal-client-id"
 client_secret        = "your-service-principal-client-secret"
 cidr_block           = "10.4.0.0/16"
 ```
+
+`deployment_name_prefix_enabled = true`로 설정한 경우에만 `deployment_name` 값을 넣어주세요.
 
 4. AWS 인증 상태 확인
 

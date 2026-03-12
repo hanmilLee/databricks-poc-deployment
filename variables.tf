@@ -21,8 +21,14 @@ variable "prefix" {
 
 variable "deployment_name" {
   type        = string
-  description = "Optional Databricks workspace deployment name for URL customization"
+  description = "Workspace URL name. Use only when deployment_name_prefix_enabled is true."
   default     = null
+}
+
+variable "deployment_name_prefix_enabled" {
+  type        = bool
+  description = "Set true only when Databricks account deployment name prefix is enabled."
+  default     = false
 }
 
 variable "client_id" {
@@ -50,6 +56,10 @@ variable "cidr_block" {
 
 locals {
   prefix = var.prefix
+  normalized_deployment_name = (
+    var.deployment_name != null && trimspace(var.deployment_name) != ""
+  ) ? trimspace(var.deployment_name) : null
+  effective_deployment_name = var.deployment_name_prefix_enabled ? local.normalized_deployment_name : null
   tags = merge(
     {
       Owner       = var.user_name
