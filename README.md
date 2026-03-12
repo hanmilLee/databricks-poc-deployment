@@ -73,16 +73,16 @@ cd databricks-poc-deployment
 이 프로젝트는 AWS Provider 기본 자격 증명 체인(예: AWS CLI 로그인 세션, `~/.aws/credentials`)을 사용하므로 `aws_access_key_id`/`aws_secret_access_key`는 `input.tfvars`에 넣지 않습니다.
 
 ```hcl
-env_name             = "databricks"
-user_name            = "firstname.lastname"
-region               = "ap-northeast-2"
-prefix               = "mycompany001-poc"
-deployment_name_prefix_enabled = false
-deployment_name      = null # prefix enabled 계정일 때만 값 입력
-databricks_account_id = "your-databricks-account-id"
-client_id            = "your-service-principal-client-id"
-client_secret        = "your-service-principal-client-secret"
-cidr_block           = "10.4.0.0/16"
+env_name                       = "databricks"
+user_name                      = "[firstname.lastname]" # example. "hanmil.lee"
+region                         = "ap-northeast-2"       # 사용될 region
+prefix                         = "mycompany001-poc"     # 사용될 databricks workspace name
+deployment_name_prefix_enabled = false                  # Salesforce상에서 prefix 가 enable 된 경우 true, 아니면 false
+deployment_name                = null                   # deployment_name_prefix_enabled = true인 경우, workspace url 앞부분에 들어갈 prefix 입력
+databricks_account_id          = "[databricks account id]" # "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+client_id                      = "[client id of a service principal(having admin permission)]" # "56xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+client_secret                  = "[client secret value of the service principal]" # "dosxxxxxxxxxxxxxxxxxxxxxxxxx"
+cidr_block                     = "[vpc cidr block]" # example. "10.10.0.0/16"
 ```
 
 `deployment_name_prefix_enabled = true`로 설정한 경우에만 `deployment_name` 값을 넣어주세요.
