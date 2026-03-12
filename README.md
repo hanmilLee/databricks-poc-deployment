@@ -23,6 +23,8 @@ Databricks on AWS 환경을 Terraform으로 배포하기 위한 PoC 예제입니
   - `client_secret`
   - `user_name`
   - `region`
+  - `prefix`
+  - `deployment_name` (선택)
   - `cidr_block`
 
 ## Terraform 실행 방법 (방법 2, 상세)
@@ -73,6 +75,8 @@ cd databricks-poc-deployment
 env_name             = "databricks"
 user_name            = "firstname.lastname"
 region               = "ap-northeast-2"
+prefix               = "mycompany001-poc"
+deployment_name      = "poc-workspace" # optional
 databricks_account_id = "your-databricks-account-id"
 client_id            = "your-service-principal-client-id"
 client_secret        = "your-service-principal-client-secret"

@@ -13,6 +13,18 @@ variable "region" {
   default = "ap-northeast-2"
 }
 
+variable "prefix" {
+  type        = string
+  description = "Prefix for AWS and Databricks resource names"
+  default     = "mycompany001-poc"
+}
+
+variable "deployment_name" {
+  type        = string
+  description = "Optional Databricks workspace deployment name for URL customization"
+  default     = null
+}
+
 variable "client_id" {
   type = string
 }
@@ -37,7 +49,7 @@ variable "cidr_block" {
 }
 
 locals {
-  prefix = "mycompany001-poc"
+  prefix = var.prefix
   tags = merge(
     {
       Owner       = var.user_name
