@@ -57,8 +57,8 @@ variable "cidr_block" {
 locals {
   prefix = var.prefix
   normalized_deployment_name = (
-    var.deployment_name != null && trimspace(var.deployment_name) != ""
-  ) ? trimspace(var.deployment_name) : null
+    var.deployment_name != null ? trimspace(var.deployment_name) : ""
+  ) != "" ? trimspace(var.deployment_name) : null
   effective_deployment_name = var.deployment_name_prefix_enabled ? local.normalized_deployment_name : null
   tags = merge(
     {
