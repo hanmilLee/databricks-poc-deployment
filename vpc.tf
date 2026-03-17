@@ -40,6 +40,18 @@ module "vpc" {
       cidr_blocks = "0.0.0.0/0"
     },
     {
+      from_port   = 8443
+      to_port     = 8444
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
+      from_port   = 8445
+      to_port     = 8451
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+    {
       self      = true
       from_port = 0
       to_port   = 65535
