@@ -133,11 +133,29 @@ databricks_account_id          = "[databricks account id]"     # "xxxxxxxx-xxxx-
 client_id                      = "[service principal client id]"
 client_secret                  = "[service principal secret]"
 cidr_block                     = "[vpc cidr block]"            # example. "10.10.0.0/16"
-metastore_id                   = "[metastore id]"              # Unity Catalog용 Metastore ID
+metastore_id                   = "[metastore id]"              # 리전에 이미 있으면 그 ID, 없으면 ""로 두면 신규 생성 (region당 1개 제약)
 enable_unity_catalog           = true                          # false로 설정 시 UC 리소스 미생성
 ```
 
 `deployment_name_prefix_enabled = true`로 설정한 경우에만 `deployment_name` 값을 넣어주세요.
+
+#### 변수별 상세 설명
+
+| 변수 | 설명 |
+|---|---|
+| `env_name` | 리소스 태그 및 내부 구분용 환경 이름 (예: `databricks`, `prod`, `dev`) |
+| `user_name` | Unity Catalog `ALL_PRIVILEGES` grant 대상. `{user_name}@databricks.com` 형식으로 사용됨 |
+| `region` | AWS region. Databricks 워크스페이스 및 VPC가 생성될 리전 (예: `ap-northeast-2`, `us-west-2`) |
+| `prefix` | 모든 리소스 이름의 prefix. S3 버킷 이름 제약상 소문자/숫자/하이픈만 허용 (언더스코어 X) |
+| `deployment_name_prefix_enabled` | Salesforce account에서 deployment name prefix가 활성화된 경우 `true`. 일반적으로 `false` |
+| `deployment_name` | `deployment_name_prefix_enabled = true`일 때만 사용. 워크스페이스 URL 앞부분에 붙음. 미사용 시 `null` |
+| `databricks_account_id` | Databricks Account 콘솔 우측 상단에서 확인 가능한 UUID |
+| `client_id` / `client_secret` | Account Admin 권한 Service Principal의 OAuth credential |
+| `cidr_block` | 신규 VPC에 할당할 CIDR. Databricks 요구사항상 최소 `/25`, 권장 `/16`~`/21` |
+| `metastore_id` | 해당 region의 Unity Catalog Metastore ID. **없으면 `""`로 두면 신규 생성.** region당 1개 제약에 유의 |
+| `enable_unity_catalog` | `true`면 UC 리소스(카탈로그/스키마/external location 등) 생성, `false`면 워크스페이스만 배포 |
+
+> 🔒 `terraform.tfvars`는 `.gitignore`로 제외되어 커밋되지 않습니다. `client_secret` 같은 민감 정보를 안전하게 넣을 수 있습니다. 팀 내 공유 시에는 `terraform.tfvars.example`만 템플릿으로 사용하세요.
 
 4. AWS 인증 상태 확인
 
