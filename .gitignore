@@ -9,6 +9,10 @@
 *.tfplan
 plan.out
 
+# Terraform variable files (may contain secrets) — commit only .example templates
+*.tfvars
+!*.tfvars.example
+
 # Terraform crash logs
 crash.log
 crash.*.log
