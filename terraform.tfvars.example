@@ -8,5 +8,5 @@ databricks_account_id          = "[databricks account id]"                      
 client_id                      = "[service principal client id]"                               # "56xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 client_secret                  = "[service principal client secret]"                           # "dosxxxxxxxxxxxxxxxxxxxxxxxxx"
 cidr_block                     = "[vpc cidr block]"                                            # example. "10.10.0.0/16"
-metastore_id                   = "[metastore id or empty to create new]"                       # ap-northeast-2 metastore ID; leave empty to create one
+metastore_id                   = "[metastore id]"                                              # 리전에 이미 metastore 있으면 그 ID 입력, 없으면 빈 문자열("")로 두면 신규 생성됨 (리전당 1개 제약)
 enable_unity_catalog           = true                                                          # Unity Catalog 리소스 생성 여부

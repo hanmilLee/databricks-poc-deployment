@@ -38,12 +38,21 @@ Databricks on AWS 환경을 Terraform으로 배포하기 위한 PoC 예제입니
   - `deployment_name_prefix_enabled`
   - `deployment_name` (선택)
   - `cidr_block`
-  - `metastore_id` (Unity Catalog 사용 시 — Account Console에서 확인)
+  - `metastore_id` (Unity Catalog 사용 시 — 아래 "Metastore ID 확인 방법" 참조. **해당 region에 metastore가 없으면 빈 문자열 `""`로 두면 신규 생성**)
   - `enable_unity_catalog` (기본값: `true`)
 
 ### Metastore ID 확인 방법
 
-Unity Catalog를 사용하려면 해당 region에 이미 생성된 Metastore의 ID가 필요합니다.
+Databricks Account는 **region당 Metastore 1개** 제약이 있습니다. 배포하려는 region에 Metastore가 이미 있는지에 따라 다음과 같이 설정합니다.
+
+| 상태 | `metastore_id` 값 | 동작 |
+|---|---|---|
+| 해당 region에 Metastore **이미 있음** | 기존 Metastore ID 입력 | 기존 Metastore에 워크스페이스 assignment만 수행 |
+| 해당 region에 Metastore **없음** | 빈 문자열 `""` | 신규 Metastore + S3 root storage를 생성하고 assignment |
+
+> ⚠️ region에 이미 Metastore가 있는데 `""`로 두면 중복 생성 시도로 실패합니다. 먼저 아래 방법으로 확인하세요.
+
+Metastore ID 확인 방법:
 
 **방법 1. Databricks Account Console**
 1. https://accounts.cloud.databricks.com 접속
