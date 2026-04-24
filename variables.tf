@@ -54,8 +54,23 @@ variable "cidr_block" {
   default = "10.4.0.0/16"
 }
 
+variable "metastore_id" {
+  type        = string
+  description = "할당할 Unity Catalog Metastore ID (Account Console에서 확인)"
+  default     = ""
+}
+
+variable "enable_unity_catalog" {
+  type        = bool
+  description = "Unity Catalog 리소스(S3, IAM, Storage Credential, External Location, Catalog, Schema) 생성 여부"
+  default     = true
+}
+
 locals {
-  prefix = var.prefix
+  prefix          = var.prefix
+  uc_prefix       = replace(var.prefix, "-", "_")
+  uc_catalog_name = "${local.uc_prefix}_catalog"
+  uc_schema_name  = "${local.uc_prefix}_db"
   normalized_deployment_name = (
     var.deployment_name != null ? trimspace(var.deployment_name) : ""
   ) != "" ? trimspace(var.deployment_name) : null
