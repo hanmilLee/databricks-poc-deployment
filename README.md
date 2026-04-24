@@ -198,8 +198,6 @@ terraform output uc_storage_credential_name
 terraform destroy
 ```
 
-> **Tip**: 재배포 시 이전 워크스페이스가 `RUNNING` 또는 `BANNED` 상태로 남아있으면 `mws_credentials`/`mws_networks`/`mws_storage_configurations` destroy가 막힙니다. Account Console에서 워크스페이스 먼저 삭제 후 `terraform destroy` 실행하세요.
-
 ## Unity Catalog 없이 배포하기
 
 워크스페이스만 배포하고 Unity Catalog 리소스는 생성하지 않으려면:
