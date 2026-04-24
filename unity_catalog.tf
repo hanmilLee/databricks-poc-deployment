@@ -48,8 +48,6 @@ resource "aws_s3_bucket_versioning" "uc_bucket" {
   }
 }
 
-# Explicit bucket policy granting the UC role access.
-# Some UC validation paths require this even when IAM role policy also grants access.
 resource "aws_s3_bucket_policy" "uc_bucket" {
   count  = var.enable_unity_catalog ? 1 : 0
   bucket = aws_s3_bucket.uc_bucket[0].id
@@ -134,19 +132,6 @@ resource "databricks_metastore_assignment" "this" {
 
 ###############################################################################
 # Unity Catalog - IAM Role + Storage Credential (official self-assume pattern)
-#
-# Circular dependency between IAM role (needs external_id in trust) and
-# storage credential (needs role_arn) is resolved by:
-#   1. storage_credential first — role_arn is a string-assembled ARN,
-#      skip_validation=true because the role doesn't exist yet.
-#   2. data source renders trust policy (UC master + self-assume +
-#      credential-specific external_id).
-#   3. aws_iam_role created with the full trust policy in one shot —
-#      AWS accepts self-reference as a literal string at CreateRole.
-#   4. time_sleep waits for IAM propagation before external_location
-#      triggers the real AssumeRole validation.
-#
-# Ref: databricks/terraform-databricks-sra, databricks provider guides.
 ###############################################################################
 
 resource "databricks_storage_credential" "this" {
@@ -238,9 +223,6 @@ resource "databricks_external_location" "this" {
   url             = "s3://${aws_s3_bucket.uc_bucket[0].bucket}"
   credential_name = databricks_storage_credential.this[0].name
   comment         = "Unity Catalog external location for PoC"
-  # Skip UC's built-in validation — known false-positive on OneEnv shared
-  # metastore environments. Permissions are verified by the role/bucket
-  # policy; catalog creation below will fail loudly if access is truly broken.
   skip_validation = true
   depends_on      = [time_sleep.uc_iam_propagation]
 }
@@ -260,6 +242,40 @@ resource "databricks_schema" "this" {
   catalog_name = databricks_catalog.this[0].name
   name         = local.uc_schema_name
   comment      = "Default schema created by Terraform"
+}
+
+###############################################################################
+# Grants for user_name
+###############################################################################
+
+resource "databricks_grants" "storage_credential" {
+  count              = var.enable_unity_catalog ? 1 : 0
+  provider           = databricks.workspace
+  storage_credential = databricks_storage_credential.this[0].name
+  grant {
+    principal  = "${var.user_name}@databricks.com"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
+resource "databricks_grants" "external_location" {
+  count             = var.enable_unity_catalog ? 1 : 0
+  provider          = databricks.workspace
+  external_location = databricks_external_location.this[0].name
+  grant {
+    principal  = "${var.user_name}@databricks.com"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
+resource "databricks_grants" "catalog" {
+  count    = var.enable_unity_catalog ? 1 : 0
+  provider = databricks.workspace
+  catalog  = databricks_catalog.this[0].name
+  grant {
+    principal  = "${var.user_name}@databricks.com"
+    privileges = ["ALL_PRIVILEGES"]
+  }
 }
 
 ###############################################################################
