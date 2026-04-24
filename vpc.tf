@@ -2,7 +2,7 @@ data "aws_availability_zones" "available" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "3.2.0"
+  version = "5.16.0"
 
   name = local.prefix
   cidr = var.cidr_block
@@ -52,13 +52,13 @@ module "vpc" {
       cidr_blocks = "0.0.0.0/0"
     },
     {
-      self      = true
+      self      = "true"
       from_port = 0
       to_port   = 65535
       protocol  = "tcp"
     },
     {
-      self      = true
+      self      = "true"
       from_port = 0
       to_port   = 65535
       protocol  = "udp"
@@ -67,13 +67,13 @@ module "vpc" {
 
   default_security_group_ingress = [
     {
-      self      = true
+      self      = "true"
       from_port = 0
       to_port   = 65535
       protocol  = "tcp"
     },
     {
-      self      = true
+      self      = "true"
       from_port = 0
       to_port   = 65535
       protocol  = "udp"
@@ -83,7 +83,7 @@ module "vpc" {
 
 module "vpc_endpoints" {
   source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = "3.2.0"
+  version = "5.16.0"
 
   vpc_id             = module.vpc.vpc_id
   security_group_ids = [module.vpc.default_security_group_id]
