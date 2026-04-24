@@ -245,40 +245,6 @@ resource "databricks_schema" "this" {
 }
 
 ###############################################################################
-# Grants for user_name
-###############################################################################
-
-resource "databricks_grants" "storage_credential" {
-  count              = var.enable_unity_catalog ? 1 : 0
-  provider           = databricks.workspace
-  storage_credential = databricks_storage_credential.this[0].name
-  grant {
-    principal  = "${var.user_name}@databricks.com"
-    privileges = ["ALL_PRIVILEGES"]
-  }
-}
-
-resource "databricks_grants" "external_location" {
-  count             = var.enable_unity_catalog ? 1 : 0
-  provider          = databricks.workspace
-  external_location = databricks_external_location.this[0].name
-  grant {
-    principal  = "${var.user_name}@databricks.com"
-    privileges = ["ALL_PRIVILEGES"]
-  }
-}
-
-resource "databricks_grants" "catalog" {
-  count    = var.enable_unity_catalog ? 1 : 0
-  provider = databricks.workspace
-  catalog  = databricks_catalog.this[0].name
-  grant {
-    principal  = "${var.user_name}@databricks.com"
-    privileges = ["ALL_PRIVILEGES"]
-  }
-}
-
-###############################################################################
 # Outputs
 ###############################################################################
 

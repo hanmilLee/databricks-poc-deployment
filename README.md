@@ -144,7 +144,7 @@ enable_unity_catalog           = true                          # false로 설정
 | 변수 | 설명 |
 |---|---|
 | `env_name` | 리소스 태그 및 내부 구분용 환경 이름 (예: `databricks`, `prod`, `dev`) |
-| `user_name` | Unity Catalog `ALL_PRIVILEGES` grant 대상. `{user_name}@databricks.com` 형식으로 사용됨 |
+| `user_name` | 리소스 `Owner` 태그 값 (AWS 리소스 태그 추적용). UC 권한은 별도로 워크스페이스 UI에서 부여 |
 | `region` | AWS region. Databricks 워크스페이스 및 VPC가 생성될 리전 (예: `ap-northeast-2`, `us-west-2`) |
 | `prefix` | 모든 리소스 이름의 prefix. S3 버킷 이름 제약상 소문자/숫자/하이픈만 허용 (언더스코어 X) |
 | `deployment_name_prefix_enabled` | Salesforce account에서 deployment name prefix가 활성화된 경우 `true`. 일반적으로 `false` |
