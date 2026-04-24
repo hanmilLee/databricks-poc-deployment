@@ -101,10 +101,17 @@ git clone https://github.com/hanmilLee/databricks-poc-deployment.git
 cd databricks-poc-deployment
 ```
 
-3. `input.tfvars` 값 수정
+3. `terraform.tfvars` 값 수정
+
+저장소에 포함된 `terraform.tfvars.example`을 복사해 `terraform.tfvars`로 만들고 값을 채워주세요. Terraform은 `terraform.tfvars`를 자동으로 읽기 때문에 `-var-file` 플래그가 필요 없습니다.
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+# 이후 터미널 편집기로 값 수정
+```
 
 아래 항목을 실제 값으로 바꿔주세요.
-이 프로젝트는 AWS Provider 기본 자격 증명 체인(예: AWS CLI 로그인 세션, `~/.aws/credentials`)을 사용하므로 `aws_access_key_id`/`aws_secret_access_key`는 `input.tfvars`에 넣지 않습니다.
+이 프로젝트는 AWS Provider 기본 자격 증명 체인(예: AWS CLI 로그인 세션, `~/.aws/credentials`)을 사용하므로 `aws_access_key_id`/`aws_secret_access_key`는 `terraform.tfvars`에 넣지 않습니다.
 
 ```hcl
 env_name                       = "databricks"
@@ -133,8 +140,8 @@ aws sts get-caller-identity
 
 ```bash
 terraform init
-terraform plan -var-file="input.tfvars"
-terraform apply -var-file="input.tfvars"
+terraform plan
+terraform apply
 ```
 
 6. 배포 결과 확인
@@ -161,8 +168,10 @@ terraform output uc_storage_credential_name
 8. 리소스 삭제
 
 ```bash
-terraform destroy -var-file="input.tfvars"
+terraform destroy
 ```
+
+> **Tip**: 재배포 시 이전 워크스페이스가 `RUNNING` 또는 `BANNED` 상태로 남아있으면 `mws_credentials`/`mws_networks`/`mws_storage_configurations` destroy가 막힙니다. Account Console에서 워크스페이스 먼저 삭제 후 `terraform destroy` 실행하세요.
 
 ## Unity Catalog 없이 배포하기
 
