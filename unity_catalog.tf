@@ -245,6 +245,30 @@ resource "databricks_schema" "this" {
 }
 
 ###############################################################################
+# Grants — all account users get ALL_PRIVILEGES on the catalog and schema
+###############################################################################
+
+resource "databricks_grants" "catalog_all_users" {
+  count    = var.enable_unity_catalog ? 1 : 0
+  provider = databricks.workspace
+  catalog  = databricks_catalog.this[0].name
+  grant {
+    principal  = "account users"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
+resource "databricks_grants" "schema_all_users" {
+  count    = var.enable_unity_catalog ? 1 : 0
+  provider = databricks.workspace
+  schema   = databricks_schema.this[0].id
+  grant {
+    principal  = "account users"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
+###############################################################################
 # Outputs
 ###############################################################################
 
