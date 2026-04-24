@@ -128,4 +128,12 @@ resource "databricks_mws_networks" "this" {
   security_group_ids = [module.vpc.default_security_group_id]
   subnet_ids         = module.vpc.private_subnets
   vpc_id             = module.vpc.vpc_id
+
+  dynamic "vpc_endpoints" {
+    for_each = var.enable_backend_private_link ? [1] : []
+    content {
+      dataplane_relay = [databricks_mws_vpc_endpoint.backend_relay[0].vpc_endpoint_id]
+      rest_api        = [databricks_mws_vpc_endpoint.backend_rest[0].vpc_endpoint_id]
+    }
+  }
 }

@@ -12,6 +12,13 @@ Databricks on AWS 환경을 Terraform으로 배포하기 위한 PoC 예제입니
 - Root S3 Bucket 및 bucket policy
 - Databricks Workspace
 
+### Backend Private Link (`enable_backend_private_link = true` 시)
+- VPC endpoint 전용 Security Group (VPC CIDR로부터 443/6666 ingress)
+- Workspace REST API 용 AWS Interface VPC endpoint
+- Secure Cluster Connectivity(SCC) Relay 용 AWS Interface VPC endpoint
+- Databricks MWS VPC endpoint 등록 × 2
+- Databricks Private Access Settings (워크스페이스에 부착)
+
 ### Unity Catalog (`enable_unity_catalog = true` 시)
 - Unity Catalog용 S3 Bucket (버저닝, 암호화, 퍼블릭 차단 적용)
 - Unity Catalog용 IAM Role (Databricks UC Master Role 신뢰 + Self-assume)
@@ -197,6 +204,37 @@ terraform output uc_storage_credential_name
 ```bash
 terraform destroy
 ```
+
+## Backend Private Link 사용하기
+
+Databricks 데이터 플레인(클러스터/SQL 웨어하우스) ↔ 컨트롤 플레인 통신을 AWS PrivateLink로 비공개화하려면 `enable_backend_private_link = true`로 설정합니다.
+
+생성되는 추가 리소스:
+
+- AWS `aws_security_group` — VPC endpoint 전용 SG (VPC CIDR로부터 443/6666 ingress 허용)
+- AWS `aws_vpc_endpoint` × 2 — Databricks Workspace REST API, Secure Cluster Connectivity(SCC) Relay
+- Databricks `databricks_mws_vpc_endpoint` × 2 — AWS VPC endpoint를 Databricks Account에 등록
+- Databricks `databricks_mws_private_access_settings` — 워크스페이스에 연결될 Private Access Settings
+- `databricks_mws_networks.vpc_endpoints` 블록에 REST/Relay VPC endpoint ID 주입
+- `databricks_mws_workspaces.private_access_settings_id`에 PAS ID 주입
+
+### 설정 예시
+
+```hcl
+enable_backend_private_link = true
+```
+
+### 사전 요구사항
+
+- **Databricks Enterprise tier** 필요 (Private Access Settings 부착은 Enterprise 전용)
+- 배포 region이 `workspace_vpce_service_names` / `relay_vpce_service_names` map에 포함되어 있어야 함 (기본값에 ap-northeast-1/2, eu-central-1, eu-west-1, us-east-1/2, us-west-2 포함)
+- 다른 region이라면 `terraform.tfvars`에서 해당 region의 VPC endpoint service name 입력 필요
+  - 공식 레퍼런스: <https://docs.databricks.com/aws/en/resources/ip-domain-region#privatelink>
+
+### 참조 문서
+
+- Databricks Terraform Provider 공식 가이드: <https://registry.terraform.io/providers/databricks/databricks/latest/docs/guides/aws-private-link-workspace>
+- Databricks PrivateLink 개요: <https://docs.databricks.com/aws/en/security/network/classic/privatelink>
 
 ## Unity Catalog 없이 배포하기
 

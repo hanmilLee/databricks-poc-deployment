@@ -10,3 +10,4 @@ client_secret                  = "[service principal client secret]"            
 cidr_block                     = "[vpc cidr block]"                                            # example. "10.10.0.0/16"
 metastore_id                   = "[metastore id]"                                              # 리전에 이미 metastore 있으면 그 ID 입력, 없으면 빈 문자열("")로 두면 신규 생성됨 (리전당 1개 제약)
 enable_unity_catalog           = true                                                          # Unity Catalog 리소스 생성 여부
+enable_backend_private_link    = false                                                         # true면 Backend Private Link (REST + SCC Relay) 생성. Databricks Enterprise tier 필요
