@@ -29,3 +29,11 @@ provider "databricks" {
   client_secret = var.client_secret
   account_id    = var.databricks_account_id
 }
+
+// workspace-level provider for Unity Catalog resources
+provider "databricks" {
+  alias         = "workspace"
+  host          = databricks_mws_workspaces.this.workspace_url
+  client_id     = var.client_id
+  client_secret = var.client_secret
+}
