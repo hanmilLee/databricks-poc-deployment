@@ -8,7 +8,7 @@
 ###############################################################################
 
 locals {
-  enable_privatelink          = var.enable_backend_private_link
+  enable_privatelink          = var.enable_backend_private_link || !var.enable_nat_gateway
   workspace_vpce_service_name = lookup(var.workspace_vpce_service_names, var.region, null)
   relay_vpce_service_name     = lookup(var.relay_vpce_service_names, var.region, null)
 }

@@ -161,6 +161,8 @@ enable_unity_catalog           = true                          # false로 설정
 | `cidr_block` | 신규 VPC에 할당할 CIDR. Databricks 요구사항상 최소 `/25`, 권장 `/16`~`/21` |
 | `metastore_id` | 해당 region의 Unity Catalog Metastore ID. **없으면 `""`로 두면 신규 생성.** region당 1개 제약에 유의 |
 | `enable_unity_catalog` | `true`면 UC 리소스(카탈로그/스키마/external location 등) 생성, `false`면 워크스페이스만 배포 |
+| `enable_nat_gateway` | **네트워크 통신 방식 선택.** `true`(기본)=Option 1(NAT+IGW+public subnet으로 공용 egress), `false`=Option 2(완전 사설, Backend PrivateLink 자동 활성화). 아래 "네트워크 통신 방식" 참조 |
+| `enable_backend_private_link` | `true`면 Backend PrivateLink(REST+SCC Relay VPC endpoint, Private Access Settings) 생성. Enterprise tier 필요. `enable_nat_gateway = false`면 자동 활성화됨 |
 
 > 🔒 `terraform.tfvars`는 `.gitignore`로 제외되어 커밋되지 않습니다. `client_secret` 같은 민감 정보를 안전하게 넣을 수 있습니다. 팀 내 공유 시에는 `terraform.tfvars.example`만 템플릿으로 사용하세요.
 
@@ -204,6 +206,25 @@ terraform output uc_storage_credential_name
 ```bash
 terraform destroy
 ```
+
+## 네트워크 통신 방식: Option 1(공용 egress) vs Option 2(완전 사설)
+
+컴퓨트 플레인(클러스터)이 컨트롤 플레인·AWS 서비스(S3/STS/Kinesis)와 통신하는 방식을 `enable_nat_gateway` 변수로 선택합니다. (플레이북의 Option 1 / Option 2에 대응)
+
+- **Option 1 — `enable_nat_gateway = true` (기본값)**
+  Regional NAT Gateway + Internet Gateway + public subnet을 두어 공용 인터넷 경로로 egress합니다. 가장 단순하며 기존 배포와 동일한 동작입니다.
+- **Option 2 — `enable_nat_gateway = false`**
+  NAT/IGW/public subnet을 만들지 않는 완전 사설 배포입니다. 모든 통신이 VPC 엔드포인트(S3 Gateway, STS·Kinesis Interface)와 Backend PrivateLink(REST + SCC Relay)로만 이루어집니다. `enable_nat_gateway = false`로 두면 **Backend PrivateLink가 자동으로 활성화**되므로 `enable_backend_private_link`를 따로 켤 필요가 없습니다. **Databricks Enterprise tier가 필요**합니다.
+
+> Frontend PrivateLink(Transit VPC 경유 사용자 접속)는 두 옵션 모두 포함하지 않습니다. Private Access Settings의 `public_access_enabled = true`로 두어 워크스페이스 UI/REST는 공용 경로로 접근합니다. Frontend까지 비공개화하려면 Transit VPC와 Frontend 엔드포인트를 별도로 구성해야 합니다.
+
+| `enable_nat_gateway` | `enable_backend_private_link` | 결과 |
+|---|---|---|
+| `true` (기본) | `false` (기본) | Option 1, PrivateLink 없음 (public egress) |
+| `true` | `true` | Option 1 + Backend PrivateLink |
+| `false` | 무관 | **Option 2** (완전 사설, Backend PrivateLink 자동 활성화) |
+
+Option 2 사용 시 배포 region이 `workspace_vpce_service_names` / `relay_vpce_service_names` map에 포함되어 있어야 합니다(기본값에 `ap-northeast-2` 포함). 자세한 내용은 아래 "Backend Private Link 사용하기"를 참조하세요.
 
 ## Backend Private Link 사용하기
 

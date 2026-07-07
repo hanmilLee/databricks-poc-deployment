@@ -10,11 +10,12 @@ module "vpc" {
   tags = local.tags
 
   enable_dns_hostnames = true
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
-  create_igw           = true
+  enable_nat_gateway   = var.enable_nat_gateway
+  single_nat_gateway   = var.enable_nat_gateway
+  create_igw           = var.enable_nat_gateway
 
-  public_subnets  = [cidrsubnet(var.cidr_block, 3, 0), cidrsubnet(var.cidr_block, 3, 2)]
+  # Option 2(enable_nat_gateway = false)는 공용 egress 경로를 두지 않으므로 public subnet을 생성하지 않습니다.
+  public_subnets  = var.enable_nat_gateway ? [cidrsubnet(var.cidr_block, 3, 0), cidrsubnet(var.cidr_block, 3, 2)] : []
   private_subnets = [cidrsubnet(var.cidr_block, 3, 1), cidrsubnet(var.cidr_block, 3, 3)]
 
   manage_default_security_group = true
@@ -130,7 +131,7 @@ resource "databricks_mws_networks" "this" {
   vpc_id             = module.vpc.vpc_id
 
   dynamic "vpc_endpoints" {
-    for_each = var.enable_backend_private_link ? [1] : []
+    for_each = local.enable_privatelink ? [1] : []
     content {
       dataplane_relay = [databricks_mws_vpc_endpoint.backend_relay[0].vpc_endpoint_id]
       rest_api        = [databricks_mws_vpc_endpoint.backend_rest[0].vpc_endpoint_id]

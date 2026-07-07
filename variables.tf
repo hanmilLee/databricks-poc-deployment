@@ -72,6 +72,12 @@ variable "enable_backend_private_link" {
   default     = false
 }
 
+variable "enable_nat_gateway" {
+  type        = bool
+  description = "true=Option 1(NAT Gateway+Internet Gateway+public subnet으로 공용 egress). false=Option 2(공용 통신 경로 없이 VPC 엔드포인트+Backend PrivateLink로만 통신하는 완전 사설 배포). false면 Backend PrivateLink가 자동으로 활성화되며 Databricks Enterprise tier가 필요합니다."
+  default     = true
+}
+
 variable "workspace_vpce_service_names" {
   type        = map(string)
   description = "Region별 Databricks Workspace(REST) VPC endpoint service name. 공식 값은 https://docs.databricks.com/aws/en/resources/ip-domain-region#privatelink 참조."
