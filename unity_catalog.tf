@@ -269,21 +269,6 @@ resource "databricks_grants" "schema_all_users" {
 }
 
 ###############################################################################
-# Disable legacy (Hive metastore) access — UC-only mode
-#   Option 2(no-NAT)에서는 레거시 HMS(RDS 3306)에 egress 경로가 없어 classic 클러스터가
-#   HMS 초기화에서 멈추므로 자동으로 UC-only로 전환합니다. Option 1은 기본값 유지.
-###############################################################################
-
-resource "databricks_disable_legacy_access_setting" "this" {
-  count    = var.enable_nat_gateway ? 0 : 1
-  provider = databricks.workspace
-  disable_legacy_access {
-    value = true
-  }
-  depends_on = [databricks_metastore_assignment.this]
-}
-
-###############################################################################
 # Outputs
 ###############################################################################
 

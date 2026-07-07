@@ -74,7 +74,7 @@ variable "enable_backend_private_link" {
 
 variable "enable_nat_gateway" {
   type        = bool
-  description = "true=Option 1(NAT Gateway+Internet Gateway+public subnet으로 공용 egress). false=Option 2(공용 통신 경로 없이 VPC 엔드포인트+Backend PrivateLink로만 통신하는 완전 사설 배포). false면 Backend PrivateLink와 UC-only(레거시 HMS 접근 차단)가 자동 활성화되며 Databricks Enterprise tier가 필요합니다."
+  description = "true=Option 1(NAT Gateway+Internet Gateway+public subnet으로 공용 egress). false=Option 2(공용 통신 경로 없이 VPC 엔드포인트+Backend PrivateLink로만 통신하는 완전 사설 배포). false면 Backend PrivateLink가 자동으로 활성화되며 Databricks Enterprise tier가 필요합니다."
   default     = true
 }
 
