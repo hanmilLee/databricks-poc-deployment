@@ -177,8 +177,25 @@ aws sts get-caller-identity
 ```bash
 terraform init
 terraform plan
+```
+
+**최초 배포는 2단계 `apply`로 진행합니다.** Unity Catalog 리소스는 워크스페이스 URL에 의존하는 workspace-level provider(`databricks.workspace`, `host = databricks_mws_workspaces.this.workspace_url`)를 사용합니다. 워크스페이스가 아직 없는 빈 state에서는 이 host가 확정되지 않아 한 번의 `apply`로는 provider 설정에 실패할 수 있습니다. 따라서 워크스페이스를 먼저 만든 뒤 나머지를 만듭니다.
+
+```bash
+# 1단계: 루트 버킷(정책 포함) + 네트워크/PrivateLink + 워크스페이스
+terraform apply \
+  -target=aws_s3_bucket_policy.root_bucket_policy \
+  -target=aws_s3_bucket_ownership_controls.root_storage_bucket \
+  -target=aws_s3_bucket_acl.root_storage_bucket \
+  -target=aws_s3_bucket_public_access_block.root_storage_bucket \
+  -target=aws_s3_bucket_server_side_encryption_configuration.root_storage_bucket \
+  -target=databricks_mws_workspaces.this
+
+# 2단계: 나머지 전체 (Unity Catalog, VPC 인터페이스 엔드포인트 등)
 terraform apply
 ```
+
+> `-target`으로 워크스페이스만 지정하면 루트 버킷 정책(sibling 리소스)이 함께 생성되지 않아 스토리지 검증에서 `Access Denied`가 발생합니다. 그래서 1단계에 루트 버킷 정책·ownership·ACL·public access block·암호화 설정을 함께 지정합니다. 워크스페이스가 생성된 뒤에는 이후 변경을 `terraform apply` 한 번으로 반영할 수 있으며, 2단계 절차는 최초 배포(빈 state)에서만 필요합니다.
 
 6. 배포 결과 확인
 
