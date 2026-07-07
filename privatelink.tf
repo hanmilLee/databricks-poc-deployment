@@ -35,6 +35,17 @@ resource "aws_security_group" "privatelink" {
     cidr_blocks = [var.cidr_block]
   }
 
+  # 컴퓨트 플레인 -> 컨트롤 플레인 API 내부 호출(8443) + Unity Catalog 로깅/리니지(8444)
+  # + 향후 확장(8445-8451). 누락 시 드라이버가 초기 연결(443/6666) 후 컨트롤 플레인
+  # 통신을 완료하지 못해 "Spark driver failed to start" 300초 타임아웃이 발생합니다.
+  ingress {
+    description = "Databricks control plane API + UC lineage/logging from VPC"
+    from_port   = 8443
+    to_port     = 8451
+    protocol    = "tcp"
+    cidr_blocks = [var.cidr_block]
+  }
+
   egress {
     description = "Allow all outbound"
     from_port   = 0
