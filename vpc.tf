@@ -39,7 +39,7 @@ locals {
   )
   # 모든 엔드포인트가 지원하는 AZ 교집합에서 앞 2개 (var.availability_zones로 수동 override 가능)
   supported_azs = sort(tolist(setintersection(local.endpoint_az_sets...)))
-  effective_azs = var.availability_zones != null ? var.availability_zones : slice(local.supported_azs, 0, 2)
+  effective_azs = var.availability_zones != null ? var.availability_zones : slice(local.supported_azs, 0, min(2, length(local.supported_azs)))
 }
 
 locals {
@@ -52,8 +52,8 @@ locals {
   subnet_newbits = min(3, 26 - local.vpc_prefix)
   all_blocks     = cidrsubnets(var.cidr_block, [for _ in range(pow(2, local.subnet_newbits)) : local.subnet_newbits]...)
 
-  compute_subnets  = slice(local.all_blocks, 0, 2)
-  endpoint_subnets = slice(local.all_blocks, 2, 4)
+  compute_subnets  = slice(local.all_blocks, 0, min(2, length(local.all_blocks)))
+  endpoint_subnets = slice(local.all_blocks, min(2, length(local.all_blocks)), min(4, length(local.all_blocks)))
   public_subnets   = var.enable_nat_gateway ? slice(local.all_blocks, min(4, length(local.all_blocks)), min(6, length(local.all_blocks))) : []
 }
 
@@ -191,10 +191,14 @@ resource "databricks_mws_networks" "this" {
   vpc_id             = module.vpc.vpc_id
 
   lifecycle {
+    # AZ 교집합이 2개 미만이거나, availability_zones로 지정한 AZ가 엔드포인트 미지원이면
+    # CreateVpcEndpoint가 "does not support the availability zone"로 실패하기 전에 여기서 막습니다.
     precondition {
-      condition     = local.vpc_prefix <= 24
-      error_message = "이 레이아웃은 서브넷 4개(각 최소 /26)가 필요하므로 cidr_block이 /24 이상이어야 합니다. 현재: ${var.cidr_block}"
+      condition     = length(local.effective_azs) == 2 && alltrue([for az in local.effective_azs : contains(local.supported_azs, az)])
+      error_message = "워크스페이스 AZ 문제: 엔드포인트가 공통 지원하는 AZ가 2개 미만이거나, availability_zones로 지정한 AZ가 미지원입니다. 지원 AZ 교집합: [${join(", ", local.supported_azs)}]"
     }
+    # cidr_block 범위(/16~/24)는 variable validation에서 이미 막습니다. Option 1은 public 2개가
+    # 더 필요하므로 /23 이상이어야 합니다(이건 enable_nat_gateway와 교차 참조라 여기서 검사).
     precondition {
       condition     = !var.enable_nat_gateway || local.vpc_prefix <= 23
       error_message = "Option 1(enable_nat_gateway=true)은 public 서브넷 2개가 추가로 필요하여 cidr_block이 /23 이상이어야 합니다. 현재: ${var.cidr_block}"

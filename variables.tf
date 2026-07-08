@@ -52,12 +52,20 @@ variable "tags" {
 variable "cidr_block" {
   type    = string
   default = "10.4.0.0/16"
+  validation {
+    condition     = can(cidrhost(var.cidr_block, 0)) && can(regex("/(1[6-9]|2[0-4])$", var.cidr_block))
+    error_message = "cidr_block은 유효한 CIDR이며 넷마스크가 /16 ~ /24 여야 합니다 (서브넷 4개, 각 최소 /26 확보). Option 1(NAT)은 /23 이상 필요."
+  }
 }
 
 variable "availability_zones" {
   type        = list(string)
   description = "워크스페이스 서브넷을 배치할 AZ 목록(2개). null이면 STS/Kinesis/Databricks VPC 엔드포인트가 모두 지원하는 AZ 교집합에서 자동으로 2개를 선택합니다. 특정 AZ 강제 예: [\"ap-northeast-2a\", \"ap-northeast-2c\"]"
   default     = null
+  validation {
+    condition     = var.availability_zones == null ? true : length(var.availability_zones) == 2
+    error_message = "availability_zones는 null(자동 선택)이거나 정확히 2개의 AZ 목록이어야 합니다."
+  }
 }
 
 variable "metastore_id" {
