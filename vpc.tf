@@ -42,6 +42,21 @@ locals {
   effective_azs = var.availability_zones != null ? var.availability_zones : slice(local.supported_azs, 0, 2)
 }
 
+locals {
+  # 서브넷 사이징 — 플레이북 정합(각 서브넷 최소 /26):
+  #   compute(워크스페이스 클러스터) 2개 + endpoint(인터페이스 VPC 엔드포인트 전용) 2개.
+  #   Option 1(enable_nat_gateway=true)은 NAT용 public 2개를 추가로 생성합니다.
+  #   서브넷이 /26 밑으로 내려가지 않도록 newbits를 조정하고, 큰 VPC는 여유있게 둡니다.
+  #   예) /24 → /26 ×4(딱 맞음), /16 → /19(기존 동작 유지).
+  vpc_prefix     = tonumber(split("/", var.cidr_block)[1])
+  subnet_newbits = min(3, 26 - local.vpc_prefix)
+  all_blocks     = cidrsubnets(var.cidr_block, [for _ in range(pow(2, local.subnet_newbits)) : local.subnet_newbits]...)
+
+  compute_subnets  = slice(local.all_blocks, 0, 2)
+  endpoint_subnets = slice(local.all_blocks, 2, 4)
+  public_subnets   = var.enable_nat_gateway ? slice(local.all_blocks, min(4, length(local.all_blocks)), min(6, length(local.all_blocks))) : []
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.16.0"
@@ -56,9 +71,11 @@ module "vpc" {
   single_nat_gateway   = var.enable_nat_gateway
   create_igw           = var.enable_nat_gateway
 
-  # Option 2(enable_nat_gateway = false)는 공용 egress 경로를 두지 않으므로 public subnet을 생성하지 않습니다.
-  public_subnets  = var.enable_nat_gateway ? [cidrsubnet(var.cidr_block, 3, 0), cidrsubnet(var.cidr_block, 3, 2)] : []
-  private_subnets = [cidrsubnet(var.cidr_block, 3, 1), cidrsubnet(var.cidr_block, 3, 3)]
+  # 플레이북 정합 서브넷: private=compute(워크스페이스), intra=엔드포인트 전용(egress 경로 없음).
+  # Option 2는 public을 만들지 않고, Option 1은 NAT용 public 2개를 생성합니다.
+  private_subnets = local.compute_subnets
+  intra_subnets   = local.endpoint_subnets
+  public_subnets  = local.public_subnets
 
   manage_default_security_group = true
   default_security_group_name   = "${local.prefix}-sg"
@@ -137,6 +154,7 @@ module "vpc_endpoints" {
       service_type = "Gateway"
       route_table_ids = flatten([
         module.vpc.private_route_table_ids,
+        module.vpc.intra_route_table_ids,
         module.vpc.public_route_table_ids
       ])
       tags = merge(local.tags, {
@@ -146,7 +164,7 @@ module "vpc_endpoints" {
     sts = {
       service             = "sts"
       private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
+      subnet_ids          = module.vpc.intra_subnets
       tags = merge(local.tags, {
         Name = "${local.prefix}-sts-vpc-endpoint"
       })
@@ -154,7 +172,7 @@ module "vpc_endpoints" {
     kinesis-streams = {
       service             = "kinesis-streams"
       private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
+      subnet_ids          = module.vpc.intra_subnets
       tags = merge(local.tags, {
         Name = "${local.prefix}-kinesis-vpc-endpoint"
       })
@@ -171,6 +189,17 @@ resource "databricks_mws_networks" "this" {
   security_group_ids = [module.vpc.default_security_group_id]
   subnet_ids         = module.vpc.private_subnets
   vpc_id             = module.vpc.vpc_id
+
+  lifecycle {
+    precondition {
+      condition     = local.vpc_prefix <= 24
+      error_message = "이 레이아웃은 서브넷 4개(각 최소 /26)가 필요하므로 cidr_block이 /24 이상이어야 합니다. 현재: ${var.cidr_block}"
+    }
+    precondition {
+      condition     = !var.enable_nat_gateway || local.vpc_prefix <= 23
+      error_message = "Option 1(enable_nat_gateway=true)은 public 서브넷 2개가 추가로 필요하여 cidr_block이 /23 이상이어야 합니다. 현재: ${var.cidr_block}"
+    }
+  }
 
   dynamic "vpc_endpoints" {
     for_each = local.enable_privatelink ? [1] : []

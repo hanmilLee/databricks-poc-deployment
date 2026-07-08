@@ -65,7 +65,7 @@ resource "aws_vpc_endpoint" "backend_rest" {
   service_name        = local.workspace_vpce_service_name
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_security_group.privatelink[0].id]
-  subnet_ids          = module.vpc.private_subnets
+  subnet_ids          = module.vpc.intra_subnets
   private_dns_enabled = true
 
   tags = merge(local.tags, {
@@ -86,7 +86,7 @@ resource "aws_vpc_endpoint" "backend_relay" {
   service_name        = local.relay_vpce_service_name
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_security_group.privatelink[0].id]
-  subnet_ids          = module.vpc.private_subnets
+  subnet_ids          = module.vpc.intra_subnets
   private_dns_enabled = true
 
   tags = merge(local.tags, {
