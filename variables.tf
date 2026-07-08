@@ -54,6 +54,12 @@ variable "cidr_block" {
   default = "10.4.0.0/16"
 }
 
+variable "availability_zones" {
+  type        = list(string)
+  description = "워크스페이스 서브넷을 배치할 AZ 목록(2개). null이면 STS/Kinesis/Databricks VPC 엔드포인트가 모두 지원하는 AZ 교집합에서 자동으로 2개를 선택합니다. 특정 AZ 강제 예: [\"ap-northeast-2a\", \"ap-northeast-2c\"]"
+  default     = null
+}
+
 variable "metastore_id" {
   type        = string
   description = "할당할 Unity Catalog Metastore ID (Account Console에서 확인)"
