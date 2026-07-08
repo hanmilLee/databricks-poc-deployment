@@ -31,5 +31,6 @@ resource "time_sleep" "wait" {
   depends_on = [
     aws_iam_role.cross_account_role
   ]
-  create_duration = "20s"
+  # cross-account IAM role 전파 대기 (짧으면 워크스페이스 생성 시 credentials validation 실패)
+  create_duration = "60s"
 }
